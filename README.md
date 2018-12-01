@@ -74,7 +74,7 @@ Example:
 ```
 hey uni find a new post in r/FloridaMan
 ```
-
+###### Notes: If you want to have uni browse NSFW images set the channel's tag to be NSFW
 ## Usage of the inspiro bot module
 ```
 hey uni inspire me
