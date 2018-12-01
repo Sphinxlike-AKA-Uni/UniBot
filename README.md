@@ -124,4 +124,7 @@ Well uni is able to use the ban hammer ability in case you want uni to do so
 hey uni <ban/perish> <name or ping here>
 ```
 ##### Note: if she returns more than one user she will not ban all of the users listed
-
+To be able to clear messages from chat you do
+```
+hey uni clear <number here>
+```
