@@ -36,6 +36,17 @@ func (Uni *UniBot) EnableModule(s *discordgo.Session, m *discordgo.MessageCreate
 		}
 	}
 	
+	if which == 16 {
+		if modules & 16 == 16 {// Already has minigame module
+			Respond(s, m, "You seem to already have the minigame module enabled")
+			return
+		} else {
+			modules = modules | 16
+			Respond(s, m, "Minigame module enabled")
+		}
+	}
+	
+	
 	
 	Uni.Database.Exec(fmt.Sprintf("UPDATE Modules SET modules = %d WHERE cID = '%s';", modules, cID))
 }
@@ -68,5 +79,17 @@ func (Uni *UniBot) DisableModule(s *discordgo.Session, m *discordgo.MessageCreat
 			return
 		}
 	}
+	
+	if which == 16 {
+		if modules & 16 == 16 {// Already has minigame module
+			modules = modules ^ 16
+			Respond(s, m, "Minigame module disabled")
+		} else {
+			Respond(s, m, "You seem to already have the minigame module disabled")
+			return
+		}
+	}
+	
+	
 	Uni.Database.Exec(fmt.Sprintf("UPDATE Modules SET modules = %d WHERE cID = '%s';", modules, cID))
 }

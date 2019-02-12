@@ -153,6 +153,13 @@ func (Uni *UniBot) ProcessMessage(s *discordgo.Session, m *discordgo.MessageCrea
 				return 1, "Inspiro"
 			}
 		}
+		if (!isDM && modules & 16 == 16) || isDM { // "Inspire me"
+			if strings.HasPrefix(strings.ToLower(m.Content), prefix+" play minesweeper") {
+				Uni.PlaySweep(s, m)
+				return 1, "Minesweeper Summon"
+			}
+		}
+		
 
 	}
 
@@ -217,8 +224,10 @@ func (Uni *UniBot) ProcessMessage(s *discordgo.Session, m *discordgo.MessageCrea
 			} else if strings.HasPrefix(strings.ToLower(m.Content), prefix+" enable module inspire") {
 				Uni.EnableModule(s, m, c.ID, 8, modules)
 				return 1, "Enable Module"
+			} else if strings.HasPrefix(strings.ToLower(m.Content), prefix+" enable module minigame") {
+				Uni.EnableModule(s, m, c.ID, 16, modules)
+				return 1, "Enable Module"
 			}
-			
 			
 			// Disable Modules
 			if strings.HasPrefix(strings.ToLower(m.Content), prefix+" disable module derpi") {
