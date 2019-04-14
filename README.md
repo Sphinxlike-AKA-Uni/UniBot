@@ -1,8 +1,6 @@
 # UniBot
 Uni discord bot to do things
 
-*Source code coming soon because I want to fix some bugs that are going on*
-
 ## About
 Just another bot to do entertaining things to add some spice to your server
 #####
@@ -10,6 +8,8 @@ She can be invited with this [link](https://discordapp.com/oauth2/authorize?clie
 
 ### What can uni do?
 If enabled she will have the ability to request posts from a subreddit, grab an image from the [inspirobot](http://inspirobot.me/), search for random images off derpibooru with the given tags and even be able to parse it's own lua code for each channel
+
+###### Update: Uni can now do minigames to maybe entertain your server for a bit
 
 ## How do I enable these modules?
 It's simple first you have to be the server owner or have the set admin role
@@ -26,7 +26,15 @@ To enable the derpibooru search module:
 ```
 hey uni enable module derpi
 ```
-**(Her lua parsing comes later, still WIP)**
+To enable the minigames module:
+```
+hey uni enable module minigame
+```
+To enable the unibucks module:
+```
+hey uni enable module unibucks
+```
+
 
 ## What if I want to disable these?
 reddit:
@@ -41,8 +49,15 @@ derpibooru:
 ```
 hey uni disable module derpi
 ```
+minigames:
+```
+hey uni disable module minigame
+```
+unibucks:
+```
+hey uni disable module unibucks
+```
 
-**(Her lua parsing comes later, still WIP)**
 #####
 
 ## Usage of the reddit module
@@ -110,6 +125,48 @@ hey uni derpi image 1761475
 ```
 
 ###### Notes: Uni will set a channel's filter to be "everything" if the channel is marked "NSFW" and has no set filter
+
+## Usage of the minigames module
+For now uni can only do minesweeper which is summoned by saying
+```
+hey uni play minesweeper
+```
+
+## Usage of the unibucks module
+Made entirely for fun as well but you could let your gambling habits go wild here
+######
+The best part about this is that there is no consequences for losing everything!
+######
+But you probably won't win anything either :­P
+######
+#### Balence check
+```
+hey uni <bank/wallet/balance>
+```
+
+#### Slot machine roll
+```
+hey uni slot roll
+```
+### Blackjack
+#### Starting a game of blackjack
+```
+hey uni play blackjack <amount to bet>
+```
+###### Note: Uni will not accept bets that are under 0 or above the amount of money you have in your balance
+#### Blackjack Hit
+```
+hey uni hit
+```
+#### Blackjack Stay
+```
+hey uni stay
+```
+#### Getting daily pay
+```
+hey uni daily
+```
+###### Note: The range of how much you could get is 20 to 2500
 
 ## Admin related things
 To be able to set roles as an "admin role" you must do
