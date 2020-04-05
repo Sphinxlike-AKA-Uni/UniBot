@@ -1,0 +1,5 @@
+token = "Discord Bot Token"
+creatorid = "Your User ID"
+dbdriver = "sqlite3"
+dbcontent = "../Uni.db"
+errlogchannel = "Discord Channel"

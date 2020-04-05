@@ -1,95 +1,37 @@
 package Uni
+import "fmt"
+var moduleslist []string = []string{"reddit", "derpi", "inspire", "minigames", "unibucks", "miscellaneous", "OwO"}
 
-import (
-	"fmt"
-	"github.com/bwmarrin/discordgo"
-
-)
-
-
-func (Uni *UniBot) EnableModule(s *discordgo.Session, m *discordgo.MessageCreate, cID string, which, modules int) {
-	if which == 2 {
-		if modules & 2 == 2 {// Already has reddit search module
-			Respond(s, m, "You seem to already have the reddit search module enabled")
-			return
-		} else { // Give reddit search module
-			modules = modules | 2
-			Respond(s, m, "Reddit search module enabled")
-		}
-	}
-	if which == 4 {
-		if modules & 4 == 4 {// Already has derpibooru search module
-			Respond(s, m, "You seem to already have the derpibooru search module enabled")
-			return
-		} else { // Give derpibooru search module
-			modules = modules | 4
-			Respond(s, m, "Derpibooru search module enabled")
-		}
-	}
-	if which == 8 {
-		if modules & 8 == 8 {// Already has inspire module
-			Respond(s, m, "You seem to already have the inspiration module enabled")
-			return
-		} else {
-			modules = modules | 8
-			Respond(s, m, "Inspiration module enabled")
-		}
+// Set module flag (setmodule = false means disable and setmodule = true means enable)
+func (Uni *UniBot) ControlModule(setmodule bool, cID string, modulesID int, modules uint64) {
+	var m uint64 = 2
+	for a := 0; a < modulesID; a++ { // 2^modulesID
+		m *= 2
 	}
 	
-	if which == 16 {
-		if modules & 16 == 16 {// Already has minigame module
-			Respond(s, m, "You seem to already have the minigame module enabled")
-			return
-		} else {
-			modules = modules | 16
-			Respond(s, m, "Minigame module enabled")
+	if modules & m == m { // module found
+		if setmodule { // enable
+			Uni.Respond(cID, fmt.Sprintf("You appear to already have %q enabled", moduleslist[modulesID]))
+		} else { // disable
+			modules ^= m
+			_, err := Uni.DBExec("UpdateChannelModules", modules, cID)
+			if err == nil { // phew, nothing bad happened
+				Uni.Respond(cID, fmt.Sprintf("%q is now disabled", moduleslist[modulesID]))
+			} else { // uh oh something bad happened
+				Uni.ErrRespond(err, cID, "updating modules variable", map[string]interface{}{"setmodule": setmodule, "cID": cID, "modulesID": modulesID, "modules": modules})
+			}
+		}
+	} else { // module not found
+		if setmodule { // enable
+			modules |= m
+			_, err := Uni.DBExec("UpdateChannelModules", modules, cID)
+			if err == nil { // phew, nothing bad happened
+				Uni.Respond(cID, fmt.Sprintf("%q is now enabled", moduleslist[modulesID]))
+			} else { // uh oh something bad happened
+				Uni.ErrRespond(err, cID, "updating modules variable", map[string]interface{}{"setmodule": setmodule, "cID": cID, "modulesID": modulesID, "modules": modules})
+			}
+		} else { // disable
+			Uni.Respond(cID, fmt.Sprintf("You appear to already have %q disabled", moduleslist[modulesID]))
 		}
 	}
-	
-	
-	
-	Uni.Database.Exec(fmt.Sprintf("UPDATE Modules SET modules = %d WHERE cID = '%s';", modules, cID))
-}
-
-func (Uni *UniBot) DisableModule(s *discordgo.Session, m *discordgo.MessageCreate, cID string, which, modules int) {
-	if which == 2 {
-		if modules & 2 == 2 {// Already has reddit search module
-			modules = modules ^ 2
-			Respond(s, m, "Reddit search module disabled")
-		} else { // Revoke reddit search module
-			Respond(s, m, "You seem to already have the reddit search module disabled")
-			return
-		}
-	}
-	if which == 4 {
-		if modules & 4 == 4 {// Already has derpibooru search module
-			modules = modules ^ 4
-			Respond(s, m, "Derpibooru search module disabled")
-		} else { // Revoke derpibooru search module
-			Respond(s, m, "You seem to already have the derpibooru search module disabled")
-			return
-		}
-	}
-	if which == 8 {
-		if modules & 8 == 8 {// Already has inspire module
-			modules = modules ^ 8
-			Respond(s, m, "Inspiration module disabled")
-		} else {
-			Respond(s, m, "You seem to already have the inspiration module disabled")
-			return
-		}
-	}
-	
-	if which == 16 {
-		if modules & 16 == 16 {// Already has minigame module
-			modules = modules ^ 16
-			Respond(s, m, "Minigame module disabled")
-		} else {
-			Respond(s, m, "You seem to already have the minigame module disabled")
-			return
-		}
-	}
-	
-	
-	Uni.Database.Exec(fmt.Sprintf("UPDATE Modules SET modules = %d WHERE cID = '%s';", modules, cID))
 }
