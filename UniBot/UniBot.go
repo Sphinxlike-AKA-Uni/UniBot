@@ -12,9 +12,10 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"io"
 	"time"
+	"runtime"
 )
-
-var versionstring string = "1.0.0-beta"
+// Decided to use roman numerals for versions
+var versionstring string = "I.I.I"
 
 type UniBot struct {
 	S	*discordgo.Session
@@ -27,6 +28,7 @@ type UniBot struct {
 	MessageHandlers uint
 	SC	chan os.Signal
 	Restart	bool
+	TempDir string
 }
 
 type UniConfig struct {
@@ -40,7 +42,8 @@ type UniConfig struct {
 func New() UniBot { // Creates a new Uni Bot
 	var Uni UniBot
 	Uni.SC = make(chan os.Signal, 1)
-	Uni.RNGChan = make(chan uint64, 256)
+	Uni.RNGChan = make(chan uint64, 16)
+	Uni.TempDir = os.TempDir()+"/UniBot"
 	return Uni
 }
 
@@ -71,6 +74,7 @@ func (Uni *UniBot) Startup(configfile string) error { // Start up the Uni Bot
 
 	// Startup threads for Uni Bot
 	go func() { // RNG
+		// might consider making uni's RNG channel into a bytes.Buffer
 		var ri uint64 // Random Int
 		for {
 			binary.Read(crand.Reader, binary.BigEndian, &ri)
@@ -78,9 +82,16 @@ func (Uni *UniBot) Startup(configfile string) error { // Start up the Uni Bot
 		}
 	}()
 
+	go func() {
+		for range time.Tick(time.Hour) { // every hour run the garbage collector
+			runtime.GC()
+		}
+	}()
+	
+	
 	// Create necessary directories
 	for _, dirstr := range []string{
-	"tmp",
+	Uni.TempDir,
 	"errlog",
 	"backups",} {
 		if _, err := os.Stat(dirstr); os.IsNotExist(err) {os.MkdirAll(dirstr, 0755)}
@@ -130,13 +141,15 @@ func (Uni *UniBot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCre
 		}
 		
 		// Get author name/nickname
-		st, err := s.GuildMember(g.ID, m.Author.ID)
-		if err == nil { // Attempt to grab the nickname if there was no error and author does have one
-			name = st.Nick
-		} else {
-			if err != nil {
-				Uni.ErrRespond(err, c.ID, "grabbing guild info", m, g, c)
-				return
+		if m.Member != nil { // handle webhook messages
+			st, err := s.GuildMember(g.ID, m.Author.ID)
+			if err == nil { // Attempt to grab the nickname if there was no error and author does have one
+				name = st.Nick
+			} else {
+				if err != nil {
+					Uni.ErrRespond(err, c.ID, "grabbing guild info", m, g, c)
+					return
+				}
 			}
 		}
 		
@@ -202,4 +215,9 @@ func (Uni *UniBot) ErrRespond(err error, cID, action string, vars ...interface{}
 		defer ef.Close() // close file when finished with dumping
 	}
 	spew.Fdump(w, vars)
+}
+
+// Only used for testing/debugging
+func (Uni *UniBot) DebugPrintVars(vars ...interface{}) {
+	spew.Fdump(os.Stdout, vars)
 }

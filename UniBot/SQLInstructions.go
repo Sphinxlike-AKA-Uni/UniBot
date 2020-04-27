@@ -33,6 +33,12 @@ PRAGMA synchronous = EXTRA;
 	"GetDerpiFilter": "SELECT filterID FROM DerpiFilters WHERE cID IS '%s';",
 	"InsertDerpiFilter": "INSERT INTO DerpiFilters VALUES ('%s', '%s', %v);",
 	"UpdateDerpiFilter": "UPDATE DerpiFilters SET filterID = %v WHERE cID IS '%s';",
+	"InsertUniBucksProfile": "INSERT INTO UniBucks VALUES ('%s', 1500.0);",
+	"AddUniBucks": "UPDATE UniBucks SET value = value + %f WHERE userID IS '%s';",
+	"GrabUniBucks": "SELECT value FROM UniBucks WHERE userID IS '%s';",
+	"GrabDailyUniBucksTime": "SELECT nanoseconds FROM DailyUniBucks WHERE userid IS '%s';",
+	"UpdateDailyUniBucksTime": "UPDATE DailyUniBucks SET nanoseconds = %d WHERE userid IS '%s';",
+	"InsertDailyUniBucksTime": "INSERT INTO DailyUniBucks VALUES ('%s', %d);",
 	},
 	"postgres": map[string]string{
 		"Startup": "", // TODO

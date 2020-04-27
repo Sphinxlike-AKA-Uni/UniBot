@@ -6,6 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"syscall"
 	"time"
+	"os"
 )
 
 
@@ -44,9 +45,9 @@ func (Uni *UniBot) ProcessMessage(m *discordgo.MessageCreate, isDM bool, g *disc
 		}
 		
 		// Current version of uni?
-		if strings.HasPrefix(strings.ToLower(m.Content), prefix+" version") {
+		if strings.HasPrefix(strings.ToLower(m.Content), prefix+" ver") {
 			// Semantic Versioning https://semver.org/
-			Uni.Respond(m.ChannelID, versionstring)
+			Uni.Respond(m.ChannelID, fmt.Sprintf("`%s`", versionstring))
 		}
 		
 		// Module stuff begin here
@@ -98,11 +99,48 @@ func (Uni *UniBot) ProcessMessage(m *discordgo.MessageCreate, isDM bool, g *disc
 		}
 		
 		if (!isDM && modules & 16 == 16) || isDM { // Minigames
+			// UNO
 			// TODO
+			
 		}
 		
 		if (!isDM && modules & 32 == 32) || isDM { // Uni Bucks Minigames
-			Uni.CheckIfProfileExists(m) // Check if user has Uni Bucks
+			if ok := Uni.CheckIfProfileExists(c.ID, m.Author.ID); !ok { // Check if user has Uni Bucks
+				return 0, "" // something happened during the "CheckIfProfileExists" function
+			}
+			if strings.HasPrefix(strings.ToLower(m.Content), prefix+" bank") ||
+			strings.HasPrefix(strings.ToLower(m.Content), prefix+" balance") || 
+			strings.HasPrefix(strings.ToLower(m.Content), prefix+" wallet") {
+				u, err := Uni.DBGetFirst("GrabUniBucks", uID)
+				if err != nil {
+					return 0, ""
+				}
+				Uni.Respond(cID, fmt.Sprintf("**%s's Uni Bucks: %.2f**", name, u))
+				return 1, "Uni Bucks Bank"
+			}
+			
+			if strings.HasPrefix(strings.ToLower(m.Content), prefix+" slot roll") {
+				Uni.SlotRoll(c.ID, m.Author.ID, name)
+				return 1, "Slot Roll"
+			} else if strings.HasPrefix(strings.ToLower(m.Content), prefix+" play blackjack ") {
+				if Uni.StartBlackjack(m.Author.ID, c.ID, m.Content[len(prefix)+16:]) {
+					Uni.RepresentCards(c.ID, m.Author.ID, name)
+				}
+				return 1, "Blackjack Start"
+			} else if strings.HasPrefix(strings.ToLower(m.Content), prefix+" daily") {
+				Uni.Daily(c.ID, m.Author.ID, name)
+			}
+			
+			if _, err := os.Stat(fmt.Sprintf("%s/b_%s", Uni.TempDir, m.Author.ID)); !os.IsNotExist(err) { // Can't hit or stay without actually playing blackjack silly
+				if strings.HasPrefix(strings.ToLower(m.Content), prefix+" hit") {
+					Uni.BlackjackHit(c.ID, m.Author.ID)
+					Uni.RepresentCards(c.ID, m.Author.ID, name)
+					return 1, "Blackjack Hit"
+				} else if strings.HasPrefix(strings.ToLower(m.Content), prefix+" stay") {
+					Uni.BlackjackStay(c.ID, m.Author.ID, name)
+					return 1, "Blackjack Stay"
+				}
+			}
 			
 			
 		}

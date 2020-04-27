@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"errors"
 	_ "github.com/mattn/go-sqlite3"
-	//_ "github.com/lib/pq"
+	//_ "github.com/lib/pq" // TODO soon
 	"database/sql"
 )
 
@@ -49,7 +49,7 @@ func (Uni *UniBot) DBGetFirst(index string, a ...interface{}) (interface{}, erro
 	defer rows.Close()
 	if rows.Next() {
 		var d interface{}
-		err = rows.Scan(d)
+		err = rows.Scan(&d)
 		return d, err
 	}
 	return nil, nil
