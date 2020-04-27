@@ -111,11 +111,11 @@ func (Uni *UniBot) ProcessMessage(m *discordgo.MessageCreate, isDM bool, g *disc
 			if strings.HasPrefix(strings.ToLower(m.Content), prefix+" bank") ||
 			strings.HasPrefix(strings.ToLower(m.Content), prefix+" balance") || 
 			strings.HasPrefix(strings.ToLower(m.Content), prefix+" wallet") {
-				u, err := Uni.DBGetFirst("GrabUniBucks", uID)
+				u, err := Uni.DBGetFirst("GrabUniBucks", m.Author.ID)
 				if err != nil {
 					return 0, ""
 				}
-				Uni.Respond(cID, fmt.Sprintf("**%s's Uni Bucks: %.2f**", name, u))
+				Uni.Respond(c.ID, fmt.Sprintf("**%s's Uni Bucks: %.2f**", name, u))
 				return 1, "Uni Bucks Bank"
 			}
 			
