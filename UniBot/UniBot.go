@@ -15,7 +15,7 @@ import (
 	"runtime"
 )
 // Decided to use roman numerals for versions
-var versionstring string = "I.I.I"
+var versionstring string = "I.I.II"
 
 type UniBot struct {
 	S	*discordgo.Session
@@ -198,9 +198,10 @@ func (Uni *UniBot) Respond(cID, content string) {
 }
 
 // Something went horribly wrong and notify the main creator and log to file
+// Will also exit the entire goroutine *if* err is not nil
 func (Uni *UniBot) ErrRespond(err error, cID, action string, vars ...interface{}) {
+	if err == nil {return}
 	Uni.Respond(cID, fmt.Sprintf("A fatal error occured while %s, discontinuing operation.\nError: ```\n%v\n```", action, err))
-	
 	efn := fmt.Sprintf("errlog/%s.log", time.Now().Format(time.RFC3339Nano)) // Error File Name
 	Uni.Respond(Uni.Config.ErrLogChannel, fmt.Sprintf("A fatal error occured while %s.\nErrFile: %s\nError: ```\n%v\n```", action, efn, err))
 	var w io.Writer // writer
@@ -215,6 +216,7 @@ func (Uni *UniBot) ErrRespond(err error, cID, action string, vars ...interface{}
 		defer ef.Close() // close file when finished with dumping
 	}
 	spew.Fdump(w, vars)
+	runtime.Goexit()
 }
 
 // Only used for testing/debugging

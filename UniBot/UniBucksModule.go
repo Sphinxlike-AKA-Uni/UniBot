@@ -9,17 +9,13 @@ import (
 
 
 // Create a Uni Bucks profile if user doesn't have one
-func (Uni *UniBot) CheckIfProfileExists(cID, uID string) bool {
+func (Uni *UniBot) CheckIfProfileExists(cID, uID string) {
 	u, err := Uni.DBGetFirst("GrabUniBucks", uID)
 	if u == nil { // user does not have a unibucks profile
-		if err != nil {
-			Uni.ErrRespond(err, cID, "checking unibucks profile", map[string]interface{}{"err": err, "cID": cID})
-			return false
-		} else { // create uni bucks profile for user
-			Uni.DBExec("InsertUniBucksProfile", uID)
-		}
+		Uni.ErrRespond(err, cID, "checking unibucks profile", map[string]interface{}{"err": err, "cID": cID})
+		Uni.DBExec("InsertUniBucksProfile", uID) // create uni bucks profile for user
 	}
-	return true // everything should be a okie
+	return // everything should be a okie
 }
 
 ////// Slot Machine
@@ -42,10 +38,7 @@ func (Uni *UniBot) SlotRoll(cID, uID, name string) {
 	inc := CheckRows(slots)
 	var moreinfo string
 	u, err := Uni.DBGetFirst("GrabUniBucks", uID)
-	if err != nil {
-		Uni.ErrRespond(err, cID, "grabbing unibucks profile", map[string]interface{}{"err": err, "cID": cID})
-		return
-	}
+	Uni.ErrRespond(err, cID, "grabbing unibucks profile", map[string]interface{}{"err": err, "cID": cID})
 	
 	var ti float64
 	
@@ -131,11 +124,8 @@ func (Uni *UniBot) StartBlackjack(uID, cID, betstr string) bool {
 	if !(os.IsNotExist(err)) { // reaches here if file exists
 		Uni.Respond(cID, "You appear to already have a game in session, here lemme show you the cards")
 		return true
-	} else {
-		goto FileCreate
 	}
 	
-FileCreate:
 	bet, err := strconv.ParseFloat(betstr, 64)
 	if err != nil {
 		Uni.Respond(cID, "Error parsing bet text")
@@ -148,10 +138,7 @@ FileCreate:
 	}
 	
 	u, err := Uni.DBGetFirst("GrabUniBucks", uID)
-	if err != nil {
-		Uni.ErrRespond(err, cID, "grabbing unibucks profile", map[string]interface{}{"err": err, "cID": cID})
-		return false
-	}
+	Uni.ErrRespond(err, cID, "grabbing unibucks profile", map[string]interface{}{"err": err, "cID": cID})
 	
 	
 	if u.(float64) < bet {
@@ -185,10 +172,7 @@ FileCreate:
 	
 	// Write to file
 	bf, err = os.Create(fmt.Sprintf("%s/b_%s", Uni.TempDir, uID))
-	if err != nil {
-		Uni.ErrRespond(err, cID, "creating blackjack file", map[string]interface{}{"err": err, "cID": cID})
-		return false
-	}
+	Uni.ErrRespond(err, cID, "creating blackjack file", map[string]interface{}{"err": err, "cID": cID})
 	defer bf.Close() // close so another function will read it
 	ubjson.NewEncoder(bf).Encode(bjg)
 	return true
@@ -236,10 +220,7 @@ func (bjg *BlackjackGame) GetCardValues(cards []Card) ( v int ) {
 // Present cards
 func (Uni *UniBot) RepresentCards(cID, uID, name string) {
 	bf, err := os.OpenFile(fmt.Sprintf("%s/b_%s", Uni.TempDir, uID), os.O_RDWR, 0644) // Blackjack File
-	if err != nil {
-		Uni.ErrRespond(err, cID, "opening blackjack file", map[string]interface{}{"err": err, "cID": cID,})
-		return
-	}
+	Uni.ErrRespond(err, cID, "opening blackjack file", map[string]interface{}{"err": err, "cID": cID,})
 	var bjg BlackjackGame
 	ubjson.NewDecoder(bf).Decode(&bjg)
 	
@@ -290,9 +271,7 @@ func (Uni *UniBot) RepresentCards(cID, uID, name string) {
 	
 	if fb { // print user's unibucks on finish
 		usersunibucks, err := Uni.DBGetFirst("GrabUniBucks", uID)
-		if err != nil { // fook
-			return
-		}
+		Uni.ErrRespond(err, cID, "grabbing unibucks profile", map[string]interface{}{"err": err, "cID": cID})
 		rs = fmt.Sprintf("%s\n**%s's Uni Bucks: %g**", rs, name, usersunibucks)
 		os.Remove(fmt.Sprintf("%s/b_%s", Uni.TempDir, uID))
 	}
@@ -303,10 +282,7 @@ func (Uni *UniBot) RepresentCards(cID, uID, name string) {
 // Hit me
 func (Uni *UniBot) BlackjackHit(cID, uID string) {
 	bf, err := os.OpenFile(fmt.Sprintf("%s/b_%s", Uni.TempDir, uID), os.O_RDWR, 0644) // Blackjack File
-	if err != nil {
-		Uni.ErrRespond(err, cID, "opening blackjack file", map[string]interface{}{"err": err, "cID": cID,})
-		return
-	}
+	Uni.ErrRespond(err, cID, "opening blackjack file", map[string]interface{}{"err": err, "cID": cID,})
 	
 	var bjg BlackjackGame
 	ubjson.NewDecoder(bf).Decode(&bjg)
@@ -326,10 +302,7 @@ func (Uni *UniBot) BlackjackHit(cID, uID string) {
 // Blackjack stay, (which dealer will make his moves here)
 func (Uni *UniBot) BlackjackStay(cID, uID, name string) {
 	bf, err := os.OpenFile(fmt.Sprintf("%s/b_%s", Uni.TempDir, uID), os.O_RDWR, 0644) // Blackjack File
-	if err != nil {
-		Uni.ErrRespond(err, cID, "opening blackjack file", map[string]interface{}{"err": err, "cID": cID,})
-		return
-	}
+	Uni.ErrRespond(err, cID, "opening blackjack file", map[string]interface{}{"err": err, "cID": cID,})
 	
 	var bjg BlackjackGame
 	ubjson.NewDecoder(bf).Decode(&bjg)
@@ -378,9 +351,7 @@ func (Uni *UniBot) BlackjackStay(cID, uID, name string) {
 	}
 	
 	usersunibucks, err := Uni.DBGetFirst("GrabUniBucks", uID)
-	if err != nil { // fook
-		return
-	}
+	Uni.ErrRespond(err, cID, "grabbing unibucks profile", map[string]interface{}{"err": err, "cID": cID})
 	
 	rs = fmt.Sprintf("%s\n**%s's Uni Bucks: %g**", rs, name, usersunibucks)
 	
@@ -393,13 +364,10 @@ func (Uni *UniBot) BlackjackStay(cID, uID, name string) {
 // other uni bucks stuff
 func (Uni *UniBot) Daily(cID, uID, name string) {
 	var nanoseconds int64
-	n, err := Uni.DBGetFirst("GrabDailyUniBucksTime", uID)
-	if err != nil {
-		Uni.ErrRespond(err, cID, "getting daily time", map[string]interface{}{"err": err, "cID": cID, })
-		return
-	}
+	err := Uni.DBGetFirstVar(&nanoseconds, "GrabDailyUniBucksTime", uID)
+	Uni.ErrRespond(err, cID, "getting daily time", map[string]interface{}{"err": err, "cID": cID, })
 	
-	if n == nil { // no entry from user
+	if nanoseconds == 0 { // no entry from user
 		Uni.DBExec("InsertDailyUniBucksTime", uID, time.Now().UnixNano())
 	}
 	
@@ -407,8 +375,9 @@ func (Uni *UniBot) Daily(cID, uID, name string) {
 		dinc := (<-Uni.RNGChan%(<-Uni.RNGChan%2480))+20 //Daily increase
 		Uni.DBExec("AddUniBucks", dinc, uID)
 		u, err := Uni.DBGetFirst("GrabUniBucks", uID)
-		if err != nil { return }
+		Uni.ErrRespond(err, cID, "grabbing unibucks profile", map[string]interface{}{"err": err, "cID": cID})
 		Uni.Respond(cID, fmt.Sprintf("You have recieved %d Uni Bucks for the day\n**%s's Uni Bucks: %g**", dinc, name, u))
+		Uni.DBExec("UpdateDailyUniBucksTime", time.Now().UnixNano(), uID)
 	} else {
 		Uni.Respond(cID, fmt.Sprintf("Plz wait %v", time.Duration((nanoseconds+int64(time.Hour*24))-time.Now().UnixNano())))
 	}

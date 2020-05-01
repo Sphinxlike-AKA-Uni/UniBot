@@ -89,6 +89,15 @@ func (Uni *UniBot) ProcessMessage(m *discordgo.MessageCreate, isDM bool, g *disc
 					return 1, "Derpi Search"
 				}
 			}
+			
+			if strings.HasPrefix(strings.ToLower(m.Content), prefix+" derpi total ") {
+				f, err := Uni.GetChannelDerpiFilter(c.ID)
+				Uni.ErrRespond(err, c.ID, "grabbing channel derpi filter", map[string]interface{}{"err": err, "cID": c.ID})
+				s, err := Uni.DerpiSearch(m.Content[len(prefix)+13:], f, map[string]interface{}{"per_page": 1})
+				Uni.ErrRespond(err, c.ID, "acquiring derpi search", map[string]interface{}{"err": err, "cID": c.ID})
+				Uni.Respond(c.ID, fmt.Sprintf("`%s` returned with %d image%s", m.Content[len(prefix)+13:], s.Total, map[bool]string{true: "s", false: ""}[s.Total != 1]))
+				return 1, "Derpi Total"
+			}
 		}
 		
 		if (!isDM && modules & 8 == 8) || isDM { // "Inspire me"
@@ -105,16 +114,12 @@ func (Uni *UniBot) ProcessMessage(m *discordgo.MessageCreate, isDM bool, g *disc
 		}
 		
 		if (!isDM && modules & 32 == 32) || isDM { // Uni Bucks Minigames
-			if ok := Uni.CheckIfProfileExists(c.ID, m.Author.ID); !ok { // Check if user has Uni Bucks
-				return 0, "" // something happened during the "CheckIfProfileExists" function
-			}
+			Uni.CheckIfProfileExists(c.ID, m.Author.ID) // Check if user has Uni Bucks( will create one if they don't)
 			if strings.HasPrefix(strings.ToLower(m.Content), prefix+" bank") ||
 			strings.HasPrefix(strings.ToLower(m.Content), prefix+" balance") || 
 			strings.HasPrefix(strings.ToLower(m.Content), prefix+" wallet") {
 				u, err := Uni.DBGetFirst("GrabUniBucks", m.Author.ID)
-				if err != nil {
-					return 0, ""
-				}
+				Uni.ErrRespond(err, c.ID, "grabbing unibucks profile", map[string]interface{}{"err": err, "cID": c.ID})
 				Uni.Respond(c.ID, fmt.Sprintf("**%s's Uni Bucks: %.2f**", name, u))
 				return 1, "Uni Bucks Bank"
 			}
@@ -129,6 +134,7 @@ func (Uni *UniBot) ProcessMessage(m *discordgo.MessageCreate, isDM bool, g *disc
 				return 1, "Blackjack Start"
 			} else if strings.HasPrefix(strings.ToLower(m.Content), prefix+" daily") {
 				Uni.Daily(c.ID, m.Author.ID, name)
+				return 1, "UniBucks Daily"
 			}
 			
 			if _, err := os.Stat(fmt.Sprintf("%s/b_%s", Uni.TempDir, m.Author.ID)); !os.IsNotExist(err) { // Can't hit or stay without actually playing blackjack silly

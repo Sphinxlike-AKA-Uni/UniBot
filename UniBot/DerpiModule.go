@@ -157,7 +157,6 @@ func (Uni *UniBot) DerpiSearch(tags, filterid string, AdditionalParameters map[s
 	}
 	
 ProcessLink:
-	fmt.Println(link)
 	var s *Search
 	err := Uni.HTTPRequestJSON("GET", link, map[string]interface{}{"User-Agent": GrabUserAgent()}, nil, &s)
 	return s, err
@@ -175,11 +174,7 @@ func (Uni *UniBot) SearchOnDerpi(cID, tags string) {
 		return
 	}
 	s, err := Uni.DerpiSearch(tags, f, map[string]interface{}{"sf": "random", "per_page": 1})
-	fmt.Println(s, err)
-	if err != nil {
-		Uni.ErrRespond(err, cID, "searching derpibooru", map[string]interface{}{"err": err, "cID": cID, "tags": tags, "filter": f})
-		return
-	}
+	Uni.ErrRespond(err, cID, "searching derpibooru", map[string]interface{}{"err": err, "cID": cID, "tags": tags, "filter": f})
 	
 	if len(s.Images) == 0 {
 		Uni.Respond(cID, "Search has returned empty")
@@ -221,7 +216,7 @@ func (Uni *UniBot) SearchOnDerpi(cID, tags string) {
 		embed.Image = nil
 	}
 	// Am going to clean most of this up soon
-	fmt.Println(Uni.S.ChannelMessageSendEmbed(cID, embed))
+	Uni.S.ChannelMessageSendEmbed(cID, embed)
 }
 
 // Grab a channel's derpi filter (set to unibot's public default if none applied)
@@ -234,11 +229,9 @@ func (Uni *UniBot) GetChannelDerpiFilter(cID string) (string, error) {
 // Set the channel's derpi filter
 func (Uni *UniBot) SetChannelDerpiFilter(gID, cID, filterid string) {
 	f, err := Uni.GetDerpiFilter(filterid)
-	if f == nil && err == nil { // redirected
+	Uni.ErrRespond(err, cID, "requesting filter data", map[string]interface{}{"gID": gID, "cID": cID, "err": err, "filterid": filterid})
+	if f == nil { // redirected
 		Uni.Respond(cID, "Filter seems to have returned nil, is the filter public?")
-		return
-	} else if f == nil && err != nil { // genuine error
-		Uni.ErrRespond(err, cID, "requesting filter data", map[string]interface{}{"gID": gID, "cID": cID, "err": err, "filterid": filterid})
 		return
 	}
 	
@@ -251,9 +244,6 @@ func (Uni *UniBot) SetChannelDerpiFilter(gID, cID, filterid string) {
 		_, err = Uni.DBExec("UpdateDerpiFilter", filterid, cID)
 	}
 	
-	if err != nil {
-		Uni.ErrRespond(err, cID, "setting channel derpibooru filter", map[string]interface{}{"gID": gID, "cID": cID, "err": err, "filterid": filterid, "fstr": fstr})
-	} else {
-		Uni.Respond(cID, fmt.Sprintf("Filter set to ID: %d, %q", f.ID, f.Name))
-	}
+	Uni.ErrRespond(err, cID, "setting channel derpibooru filter", map[string]interface{}{"gID": gID, "cID": cID, "err": err, "filterid": filterid, "fstr": fstr})
+	Uni.Respond(cID, fmt.Sprintf("Filter set to ID: %d, %q", f.ID, f.Name))
 }
