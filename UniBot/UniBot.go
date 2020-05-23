@@ -15,7 +15,7 @@ import (
 	"runtime"
 )
 // Decided to use roman numerals for versions
-var versionstring string = "I.I.II"
+var versionstring string = "I.I.III"
 
 type UniBot struct {
 	S	*discordgo.Session
@@ -82,12 +82,24 @@ func (Uni *UniBot) Startup(configfile string) error { // Start up the Uni Bot
 		}
 	}()
 
+	// every hour run the garbage collector
 	go func() {
-		for range time.Tick(time.Hour) { // every hour run the garbage collector
+		for range time.Tick(time.Hour) {
 			runtime.GC()
 		}
 	}()
 	
+	// Every hour change status on uni
+	go func() {
+		for range time.Tick(time.Hour) {
+			chosenstatus := Uni.statuses[<-Uni.RNGChan%uint64(len(Uni.statuses))]
+			if chosenstatus[0] == "Playing" { // Playing Game
+				Uni.DG.UpdateStatus(0, chosenstatus[1])
+			} else if chosenstatus[0] == "Listening" { // Listening song
+				Uni.DG.UpdateListeningStatus(chosenstatus[1])
+			}
+		}
+	}()
 	
 	// Create necessary directories
 	for _, dirstr := range []string{
@@ -143,13 +155,8 @@ func (Uni *UniBot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCre
 		// Get author name/nickname
 		if m.Member != nil { // handle webhook messages
 			st, err := s.GuildMember(g.ID, m.Author.ID)
-			if err == nil { // Attempt to grab the nickname if there was no error and author does have one
+			if st != nil {
 				name = st.Nick
-			} else {
-				if err != nil {
-					Uni.ErrRespond(err, c.ID, "grabbing guild info", m, g, c)
-					return
-				}
 			}
 		}
 		
@@ -174,7 +181,7 @@ func (Uni *UniBot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCre
 		isDM = true
 	}
 	
-	if name == "" { // either is a direct message or something happened on line 129
+	if name == "" { // either is a direct message or something happened on line 145
 		name = m.Author.Username
 	}
 	
