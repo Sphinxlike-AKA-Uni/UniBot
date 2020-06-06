@@ -109,7 +109,21 @@ func (Uni *UniBot) ProcessMessage(m *discordgo.MessageCreate, isDM bool, g *disc
 		
 		if (!isDM && modules & 16 == 16) || isDM { // Minigames
 			// UNO
-			// TODO
+			if strings.HasPrefix(strings.ToLower(m.Content), prefix+" start uno")
+				uf, err := os.OpenFile(fmt.Sprintf("%s/uno_%s", Uni.TempDir, m.Author.ID), os.O_RDWR, 0644) // UNO File
+				if !(os.IsNotExist(err)) { // reaches here if file exists
+					Uni.UNOCreate(cID, m.Author.ID)
+				} else {
+					Uni.Respond(cID, "There is currently an UNO game going on, if you wish for more than one UNO game to start I would recommend having another text channel.")
+				}
+				/*
+bf, err := os.OpenFile(fmt.Sprintf("%s/b_%s", Uni.TempDir, uID), os.O_RDWR, 0644) // Blackjack File
+	if !(os.IsNotExist(err)) { // reaches here if file exists
+		Uni.Respond(cID, "You appear to already have a game in session, here lemme show you the cards")
+		return true
+	}
+				*/
+			}
 			
 		}
 		

@@ -129,7 +129,7 @@ type GetComment struct {
 
 // Get Filter data from derpi
 func (Uni *UniBot) GetDerpiFilter(filterid string) (*Filter, error) {
-	resp, err := Uni.HTTPRequest("GET", fmt.Sprintf("https://derpibooru.org/api/v1/json/filters/%d", filterid), map[string]interface{}{"User-Agent": GrabUserAgent(),}, nil)
+	resp, err := Uni.HTTPRequest("GET", fmt.Sprintf("https://derpibooru.org/api/v1/json/filters/%s", filterid), map[string]interface{}{"User-Agent": GrabUserAgent(),}, nil)
 	if err != nil { return nil, err }
 	var f *Filter
 	json.NewDecoder(resp.Body).Decode(&f)

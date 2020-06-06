@@ -91,13 +91,14 @@ func (Uni *UniBot) Startup(configfile string) error { // Start up the Uni Bot
 	
 	// Every hour change status on uni
 	go func() {
-		for range time.Tick(time.Hour) {
+		for {
 			chosenstatus := statuses[<-Uni.RNGChan%uint64(len(statuses))]
 			if chosenstatus[0] == "Playing" { // Playing Game
 				Uni.S.UpdateStatus(0, chosenstatus[1])
 			} else if chosenstatus[0] == "Listening" { // Listening song
 				Uni.S.UpdateListeningStatus(chosenstatus[1])
 			}
+			time.Sleep(time.Hour)
 		}
 	}()
 	
