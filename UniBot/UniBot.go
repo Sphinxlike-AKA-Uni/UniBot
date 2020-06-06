@@ -15,7 +15,7 @@ import (
 	"runtime"
 )
 // Decided to use roman numerals for versions
-var versionstring string = "I.I.III"
+var versionstring string = "I.I.IV-beta.I"
 
 type UniBot struct {
 	S	*discordgo.Session
