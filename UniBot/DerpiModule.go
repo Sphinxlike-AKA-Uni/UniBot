@@ -72,18 +72,18 @@ type Search struct {
 
 // For derpi filters
 type Filter struct {
-	ID int64
-	Name string
-	Description string
-	Hidden_Tag_IDs []int64
-	Spoilered_Tag_IDs []int64
-	Spoilered_Tags []string
-	Hidden_Complex string
-	Spoilered_Complex string
-	Public bool
-	System bool
-	User_Count int64
-	User_ID int64
+	ID int64 `json:"id"`
+	Name string `json:"name"`
+	Description string `json:"description"`
+	Hidden_Tag_IDs []int64 `json:"hidden_tag_ids"`
+	Spoilered_Tag_IDs []int64 `json:"spoiler_tag_ids"`
+	//Spoilered_Tags []string // was this removed?
+	Hidden_Complex string `json:"hidden_complex"`
+	Spoilered_Complex string `json:"spoiler_complex"`
+	Public bool `json:"public"`
+	System bool `json:"system"`
+	User_Count int64 `json:"user_count"`
+	User_ID int64 `json:"user_id"`
 }
 
 type GetFilter struct {
@@ -131,9 +131,9 @@ type GetComment struct {
 func (Uni *UniBot) GetDerpiFilter(filterid string) (*Filter, error) {
 	resp, err := Uni.HTTPRequest("GET", fmt.Sprintf("https://derpibooru.org/api/v1/json/filters/%s", filterid), map[string]interface{}{"User-Agent": GrabUserAgent(),}, nil)
 	if err != nil { return nil, err }
-	var f *Filter
+	var f *GetFilter
 	json.NewDecoder(resp.Body).Decode(&f)
-	return f, nil
+	return f.Filter, nil
 }
 
 // Grab a search of certain tags and other parameters
